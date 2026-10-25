@@ -12,8 +12,8 @@ Nenhuma rota PHP de negócio nem o esquema do banco são alterados.
 | Arquivo | Função |
 |---|---|
 | `assets/css/sysmg-ios-mobile.css` | Estilos exclusivos de celular (ativos apenas em `@media max-width:768px`). |
-| `assets/js/sysmg-ios-mobile.js`   | Lógica mobile (Bottom Sheet, auto-rótulo de tabelas, tab bar ativa). Dormente no PC. |
-| `assets/mobile/_shell.php`        | Parcial PHP com Bottom Tab Bar + skeleton do Bottom Sheet. Inclua UMA VEZ no `index.php`. |
+| `assets/js/sysmg-ios-mobile.js`   | Motor JS: auto-rotulagem de tabelas, abertura/fechamento de gavetas, destaque da aba ativa. Dormente no PC. |
+| `assets/mobile/_shell.php`        | Parcial PHP com Bottom Tab Bar + duas gavetas prontas (`iosGavetaPrincipal` e `iosGavetaMais`). Inclua UMA VEZ no `index.php`. |
 
 ---
 
@@ -35,7 +35,9 @@ Antes do include, se já houver uma variável de rota no seu `index.php`:
 ```php
 <?php $moduloAtual = $_GET['modulo'] ?? 'dashboard'; ?>
 ```
-Se omitido, o parcial e o JS detectam a rota sozinhos lendo `?modulo=`.
+Se omitido, o parcial e o JS detectam a rota sozinhos. O JS compara o
+atributo `data-rota` das abas contra `window.location.href` por substring,
+então vale para `?modulo=producao`, `?p=producao`, `/producao.php` etc.
 
 ### 2.4. Garanta o `<meta viewport>` com `viewport-fit=cover`
 No `<head>` do `index.php`, confirme que existe:
@@ -58,60 +60,83 @@ No `<head>`:
 
 ## 3. Adaptando as tabelas do Dashboard (Produção/Gestão)
 
-Em **cada `<table>`** cujo cabeçalho não cabe no celular:
+### 3.1. Automático para quem já usa Bootstrap
+Toda `<table class="table">` **já é convertida em cartões no celular sem precisar fazer nada** — o JS adiciona `.tabela-responsiva-ios` automaticamente.
 
+### 3.2. Para tabelas que não usam `.table`
+Basta adicionar a classe diretamente:
 ```html
-<table class="tabela-responsiva-ios">   <!-- única mudança: adicionar a classe -->
+<table class="tabela-responsiva-ios">
   <thead>
     <tr><th>Cliente</th><th>Processo</th><th>Status</th></tr>
   </thead>
   <tbody>
     <tr><td>João Silva</td><td>0001234-56.2025</td><td>Em andamento</td></tr>
-    ...
   </tbody>
 </table>
 ```
-
-- No **PC**: continua tabela clássica em colunas (sem alteração visual).
-- No **iPhone**: cada `<tr>` vira um cartão com o nome da coluna à esquerda e
-  o valor à direita. O JS lê o `<thead>` e preenche `data-label` em cada `<td>`.
+No PC a tabela segue clássica (colunas). No iPhone cada `<tr>` vira um cartão
+com o nome da coluna à esquerda e o valor à direita — o JS lê os `<th>` e
+preenche `data-label` em cada `<td>`.
 
 ---
 
 ## 4. Abrindo um Bottom Sheet (filtros, detalhes, formulários rápidos)
 
-### 4.1. Via atributos HTML (sem JS extra)
+### 4.1. Gaveta genérica reutilizável (`iosGavetaPrincipal`)
+Já incluída no `_shell.php`. Preencha o corpo via JS e abra:
+```javascript
+// 1) preenche o título e o conteúdo
+document.getElementById('iosGavetaPrincipalTitulo').textContent = 'Detalhes do Processo';
+document.getElementById('iosGavetaPrincipalCorpo').innerHTML = '<p>Autor: ...</p><p>Réu: ...</p>';
+
+// 2) abre
+abrirGavetaIOS('iosGavetaPrincipal');
+
+// 3) fecha
+fecharGavetaIOS('iosGavetaPrincipal');
+```
+
+Em qualquer `<button>` ou link:
 ```html
-<button type="button"
-        data-ios-sheet="idConteudoOculto"
-        data-ios-sheet-title="Filtros do Painel">
+<button type="button" onclick="abrirGavetaIOS('iosGavetaPrincipal')">
+  Ver detalhes
+</button>
+```
+
+### 4.2. Gavetas dedicadas por tela (recomendado para filtros fixos)
+Dentro do seu arquivo de módulo (ex.: `modulos/producao.php`), declare a
+gaveta com conteúdo já pronto:
+
+```html
+<div class="ios-bottom-sheet-backdrop" id="iosGavetaFiltrosProducao"
+     onclick="if(event.target===this) fecharGavetaIOS('iosGavetaFiltrosProducao');">
+  <div class="ios-bottom-sheet">
+    <div class="ios-sheet-handle"></div>
+    <h3 style="margin:0 0 12px;font-size:17px;font-weight:600;">Filtrar Produção</h3>
+    <form method="get">
+      <label>De</label>  <input type="date" name="de">
+      <label>Até</label> <input type="date" name="ate">
+      <button type="submit" class="btn">Aplicar</button>
+      <button type="button" class="btn"
+              onclick="fecharGavetaIOS('iosGavetaFiltrosProducao')">Cancelar</button>
+    </form>
+  </div>
+</div>
+
+<!-- Botão que abre -->
+<button type="button" class="btn"
+        onclick="abrirGavetaIOS('iosGavetaFiltrosProducao')">
   Filtrar
 </button>
-
-<div id="idConteudoOculto" hidden>
-  <!-- qualquer HTML: formulário, detalhes de processo, lista de ações -->
-  <form>
-    <label>Período</label>
-    <input type="date" name="de"> <input type="date" name="ate">
-    <button type="submit" class="btn">Aplicar</button>
-  </form>
-</div>
 ```
 
-### 4.2. Via API JavaScript
-```javascript
-SysMGMobile.openSheet({
-  title: 'Detalhes do Processo',
-  html:  '<p>Autor: ...</p><p>Réu: ...</p>'
-});
-// Para fechar programaticamente:
-SysMGMobile.closeSheet();
-```
+Fechamento automático: toque fora da gaveta (no backdrop escuro). Também
+funciona com qualquer `<button type="button" onclick="fecharGavetaIOS('idDaGaveta')">`.
 
-### 4.3. Fechamento
-A gaveta fecha automaticamente por: toque no backdrop, arrasto para baixo
-pela barrinha cinza, botão voltar do sistema, ou qualquer elemento com
-`data-ios-sheet-close` dentro da gaveta.
+### 4.3. Gaveta "Mais" (menu secundário)
+Já pronta no `_shell.php` como `iosGavetaMais`, acionada pela aba "Mais"
+da Bottom Tab Bar. Edite o `<ul>` dela para incluir/trocar atalhos.
 
 ---
 
@@ -139,8 +164,8 @@ Em qualquer bloco de indicadores do painel:
 - [ ] Home Indicator: a Bottom Tab Bar mantém 16–20 px livres acima da barrinha branca.
 - [ ] Tocar qualquer `<input>`, `<select>` ou `<textarea>` **NÃO** causa zoom (regra de 16 px).
 - [ ] Nenhum arrasto horizontal acidental em iPhone SE (375 px) nem Pro Max (430 px).
-- [ ] Tabelas com `.tabela-responsiva-ios` renderizam como cartões legíveis.
-- [ ] Bottom Sheet abre/fecha com toque no backdrop, swipe para baixo e botão voltar.
+- [ ] Tabelas Bootstrap (`.table`) renderizam como cartões legíveis automaticamente.
+- [ ] Bottom Sheet abre com `abrirGavetaIOS` e fecha com toque no backdrop.
 - [ ] Todo botão/link alcança no mínimo 44 × 44 px de área de toque.
 - [ ] Trocar iOS para tema escuro → o SysMG acompanha coerentemente.
 
@@ -148,11 +173,12 @@ Em qualquer bloco de indicadores do painel:
 
 ## 7. Checklist de QA no PC (regressão zero)
 
-- [ ] Resolução ≥ 1024 px: Bottom Tab Bar e Bottom Sheet não aparecem no DOM renderizado.
+- [ ] Resolução ≥ 1024 px: Bottom Tab Bar e gavetas não aparecem na tela.
 - [ ] Tabelas sem a classe `.tabela-responsiva-ios` seguem exatamente iguais.
-- [ ] Tabelas **com** a classe seguem com layout tradicional de colunas no PC.
-- [ ] Nenhum input de desktop ganha `font-size:16px` por acidente (só vale em `max-width:768px`).
-- [ ] Nenhum efeito `backdrop-filter` nem `padding-bottom` extra visível no PC.
+- [ ] Tabelas Bootstrap (`.table`) seguem com layout tradicional de colunas no PC
+      (o JS adiciona a classe mas o CSS de cartão só vale em `max-width:768px`).
+- [ ] Nenhum input de desktop ganha `font-size:16px` por acidente.
+- [ ] Nenhum `backdrop-filter` nem `padding-bottom` extra visível no PC.
 
 ---
 

@@ -30,13 +30,65 @@ if (!function_exists('sysmg_tab_ativa')) {
      SYSMG MOBILE SHELL — início
      ============================================================ -->
 
-<!-- Backdrop + Gaveta Inferior (Bottom Sheet) -->
-<div class="ios-bottom-sheet-backdrop" id="iosBottomSheetBackdrop" aria-hidden="true">
-  <div class="ios-bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="iosBottomSheetTitle">
+<!--
+  GAVETA PRINCIPAL — reutilizável para filtros, detalhes de processo,
+  formulários rápidos. Preencha o conteúdo via JS antes de chamar
+  abrirGavetaIOS('iosGavetaPrincipal').
+-->
+<div class="ios-bottom-sheet-backdrop" id="iosGavetaPrincipal"
+     aria-hidden="true"
+     onclick="if(event.target===this) fecharGavetaIOS('iosGavetaPrincipal');">
+  <div class="ios-bottom-sheet" role="dialog" aria-modal="true"
+       aria-labelledby="iosGavetaPrincipalTitulo">
     <div class="ios-sheet-handle" aria-hidden="true"></div>
-    <h3 id="iosBottomSheetTitle" class="ios-sheet-title"
-        style="margin:0 0 12px;font-size:17px;font-weight:600;color:var(--ios-text-primary);"></h3>
-    <div class="ios-sheet-body" id="iosBottomSheetBody"></div>
+    <h3 id="iosGavetaPrincipalTitulo"
+        style="margin:0 0 12px;font-size:17px;font-weight:600;color:var(--ios-text-primary);">
+      Detalhes
+    </h3>
+    <div id="iosGavetaPrincipalCorpo"></div>
+  </div>
+</div>
+
+<!--
+  GAVETA "MAIS" — já carrega os atalhos de módulos secundários.
+  Acrescente ou troque <li>...</li> conforme os módulos do SysMG.
+-->
+<div class="ios-bottom-sheet-backdrop" id="iosGavetaMais"
+     aria-hidden="true"
+     onclick="if(event.target===this) fecharGavetaIOS('iosGavetaMais');">
+  <div class="ios-bottom-sheet" role="dialog" aria-modal="true"
+       aria-labelledby="iosGavetaMaisTitulo">
+    <div class="ios-sheet-handle" aria-hidden="true"></div>
+    <h3 id="iosGavetaMaisTitulo"
+        style="margin:0 0 12px;font-size:17px;font-weight:600;color:var(--ios-text-primary);">
+      Mais opções
+    </h3>
+    <ul style="list-style:none;margin:0;padding:0;">
+      <li>
+        <a href="?modulo=integracoes&amp;origem=pwa"
+           style="display:block;padding:14px 0;border-bottom:1px solid var(--ios-border);color:var(--ios-text-primary);text-decoration:none;font-size:16px;">
+          Integrações
+        </a>
+      </li>
+      <li>
+        <a href="?modulo=relatorios&amp;origem=pwa"
+           style="display:block;padding:14px 0;border-bottom:1px solid var(--ios-border);color:var(--ios-text-primary);text-decoration:none;font-size:16px;">
+          Relatórios
+        </a>
+      </li>
+      <li>
+        <a href="?modulo=configuracoes&amp;origem=pwa"
+           style="display:block;padding:14px 0;border-bottom:1px solid var(--ios-border);color:var(--ios-text-primary);text-decoration:none;font-size:16px;">
+          Configurações
+        </a>
+      </li>
+      <li>
+        <a href="?logout=1"
+           style="display:block;padding:14px 0;color:#FF3B30;text-decoration:none;font-size:16px;font-weight:600;">
+          Sair
+        </a>
+      </li>
+    </ul>
   </div>
 </div>
 
@@ -93,11 +145,11 @@ if (!function_exists('sysmg_tab_ativa')) {
     <span>Comunica</span>
   </a>
 
-  <a href="#"
+  <!-- Aba "Mais": abre a gaveta #iosGavetaMais sem navegar. -->
+  <a href="javascript:void(0);"
      class="ios-tab-item<?= sysmg_tab_ativa('mais', $moduloAtual) ?>"
      data-rota="mais"
-     data-ios-sheet="iosMenuMais"
-     data-ios-sheet-title="Mais opções">
+     onclick="abrirGavetaIOS('iosGavetaMais'); return false;">
     <svg class="ios-tab-icon" viewBox="0 0 24 24" width="22" height="22"
          fill="none" stroke="currentColor" stroke-width="2"
          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -108,37 +160,6 @@ if (!function_exists('sysmg_tab_ativa')) {
     <span>Mais</span>
   </a>
 </nav>
-
-<!-- Conteúdo-fonte do menu "Mais" (abrirá dentro do Bottom Sheet).
-     Adicione aqui novos atalhos conforme os módulos adicionais do SysMG.    -->
-<div id="iosMenuMais" hidden>
-  <ul style="list-style:none;margin:0;padding:0;">
-    <li>
-      <a href="?modulo=integracoes&amp;origem=pwa"
-         style="display:block;padding:14px 0;border-bottom:1px solid var(--ios-border);color:var(--ios-text-primary);text-decoration:none;font-size:16px;">
-        Integrações
-      </a>
-    </li>
-    <li>
-      <a href="?modulo=relatorios&amp;origem=pwa"
-         style="display:block;padding:14px 0;border-bottom:1px solid var(--ios-border);color:var(--ios-text-primary);text-decoration:none;font-size:16px;">
-        Relatórios
-      </a>
-    </li>
-    <li>
-      <a href="?modulo=configuracoes&amp;origem=pwa"
-         style="display:block;padding:14px 0;border-bottom:1px solid var(--ios-border);color:var(--ios-text-primary);text-decoration:none;font-size:16px;">
-        Configurações
-      </a>
-    </li>
-    <li>
-      <a href="?logout=1"
-         style="display:block;padding:14px 0;color:#FF3B30;text-decoration:none;font-size:16px;font-weight:600;">
-        Sair
-      </a>
-    </li>
-  </ul>
-</div>
 
 <!-- ============================================================
      SYSMG MOBILE SHELL — fim
