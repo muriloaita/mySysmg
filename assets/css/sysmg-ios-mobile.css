@@ -1,0 +1,689 @@
+/**
+ * ============================================================================
+ * SYSMG - MÓDULO DE INTERFACE MOBILE iOS-FIRST (PWA)
+ * Objetivo: Tornar o SysMG 100% intuitivo no iPhone sem alterar a versão PC.
+ * ============================================================================
+ */
+
+/* 1. VARIÁVEIS DE DESIGN PADRÃO APPLE (iOS HIG) */
+:root {
+  --ios-bg-primary: #F2F2F7;          /* Fundo cinza claro clássico de apps iOS */
+  --ios-bg-card: #FFFFFF;             /* Fundo branco puro para os cartões */
+  --ios-text-primary: #1C1C1E;        /* Cor de texto principal de alto contraste */
+  --ios-text-secondary: #8E8E93;      /* Cor de rótulos e textos secundários */
+  --ios-accent: #007AFF;              /* Azul oficial de ação do iOS (ajustável) */
+  --ios-border: rgba(60, 60, 67, 0.12); /* Linha divisória fina padrão Apple */
+  --ios-radius-card: 16px;            /* Arredondamento suave dos cartões */
+  --ios-tabbar-height: 64px;          /* Altura da barra de navegação inferior */
+}
+
+/* Suporte automático caso você prefira o modo escuro (Dark Mode) no celular */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ios-bg-primary: #000000;
+    --ios-bg-card: #1C1C1E;
+    --ios-text-primary: #FFFFFF;
+    --ios-text-secondary: #98989F;
+    --ios-accent: #0A84FF;
+    --ios-border: rgba(84, 84, 88, 0.35);
+  }
+}
+
+/* No PC (telas >= 769px), escondemos os componentes exclusivos de celular */
+@media (min-width: 769px) {
+  .ios-bottom-tabbar,
+  .ios-bottom-sheet-backdrop,
+  .ios-mobile-header {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+ * 2. REGRAS EXCLUSIVAS PARA CELULAR (Telas até 768px)
+ * Tudo aqui dentro só é ativado quando o usuário acessa pelo celular!
+ * ============================================================================ */
+@media (max-width: 768px) {
+
+  /* Ajuste geral do corpo da página para respeitar o topo e a base do iPhone */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background-color: var(--ios-bg-primary);
+    color: var(--ios-text-primary);
+    margin: 0;
+    padding-top: env(safe-area-inset-top, 12px);
+    /* Espaço no final da página para o conteúdo não ficar escondido atrás da barra inferior */
+    padding-bottom: calc(var(--ios-tabbar-height) + env(safe-area-inset-bottom, 20px) + 24px);
+    overflow-x: hidden; /* Impede que a tela role para os lados acidentalmente */
+    -webkit-tap-highlight-color: transparent; /* Remove piscada cinza ao tocar no iPhone */
+  }
+
+  /* 3. PREVENÇÃO DE ZOOM AUTOMÁTICO NO IPHONE (REGRA DE 16PX)
+   * Se um campo tiver fonte menor que 16px, o Safari dá zoom e bagunça a tela. */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px; /* Altura mínima recomendada pela Apple para o toque do dedo */
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  /* Garante que todos os botões tenham área de toque confortável (mínimo 44px) */
+  button,
+  .btn,
+  a.btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-weight: 600;
+    touch-action: manipulation; /* Deixa o clique instantâneo sem atraso de 300ms */
+  }
+
+  /* 4. GRADE DE INDICADORES (DASHBOARD DE PRODUÇÃO/GESTÃO)
+   * Transforma painéis largos em uma grade de 2 colunas lado a lado no iPhone */
+  .sysmg-kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+
+  .sysmg-kpi-card {
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    padding: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--ios-border);
+  }
+
+  /* 5. CONVERSÃO AUTOMÁTICA DE TABELAS DE PC EM CARTÕES DE CELULAR
+   * Basta adicionar a classe "tabela-responsiva-ios" na sua <table> atual! */
+  table.tabela-responsiva-ios,
+  table.tabela-responsiva-ios thead,
+  table.tabela-responsiva-ios tbody,
+  table.tabela-responsiva-ios th,
+  table.tabela-responsiva-ios td,
+  table.tabela-responsiva-ios tr {
+    display: block;
+    width: 100%;
+  }
+
+  /* Esconde o cabeçalho tradicional da tabela no celular */
+  table.tabela-responsiva-ios thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  /* Cada linha (tr) vira um Card elegante estilo iOS */
+  table.tabela-responsiva-ios tbody tr {
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--ios-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Cada célula (td) mostra o nome da coluna à esquerda e o valor à direita */
+  table.tabela-responsiva-ios td {
+    border: none;
+    border-bottom: 1px solid var(--ios-border);
+    position: relative;
+    padding: 8px 0 8px 42%;
+    text-align: right;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+  }
+
+  table.tabela-responsiva-ios td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  /* Puxa o nome da coluna automaticamente do atributo data-label */
+  table.tabela-responsiva-ios td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 40%;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+  }
+
+  /* 6. BARRA DE NAVEGAÇÃO INFERIOR (BOTTOM TAB BAR NATIVA iOS) */
+  .ios-bottom-tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--ios-tabbar-height) + env(safe-area-inset-bottom, 16px));
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px); /* Efeito vidro fosco (Glassmorphism) do iOS */
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--ios-border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9990;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ios-bottom-tabbar {
+      background: rgba(28, 28, 30, 0.85);
+    }
+  }
+
+  .ios-tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--ios-text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    gap: 4px;
+    min-height: 48px;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  /* Efeito de clique suave estilo iPhone */
+  .ios-tab-item:active {
+    transform: scale(0.92);
+  }
+
+  .ios-tab-item.ativo {
+    color: var(--ios-accent);
+    font-weight: 600;
+  }
+
+  .ios-tab-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  /* 7. GAVETA DESLIZANTE (BOTTOM SHEET) PARA DETALHES E FILTROS */
+  .ios-bottom-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .ios-bottom-sheet-backdrop.aberto {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ios-bottom-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--ios-bg-card);
+    border-radius: 22px 22px 0 0;
+    padding: 12px 20px calc(24px + env(safe-area-inset-bottom, 16px));
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 9999;
+  }
+
+  .ios-bottom-sheet-backdrop.aberto .ios-bottom-sheet {
+    transform: translateY(0);
+  }
+
+  /* Barrinha cinza no topo da gaveta indicando que pode arrastar/fechar */
+  .ios-sheet-handle {
+    width: 40px;
+    height: 5px;
+    background: rgba(142, 142, 147, 0.4);
+    border-radius: 99px;
+    margin: 4px auto 16px;
+  }
+
+  /* ==========================================================================
+   * 8. OVERRIDE DO TEMA DESKTOP "SPACE ADMIN DASHBOARD" (Bootstrap 3)
+   *    No PC o tema segue intocado. No celular, suprimimos a sidebar/navbar
+   *    desktop para a Bottom Tab Bar iOS assumir o controle da navegação.
+   * ======================================================================== */
+  .page-sidebar,
+  .navbar.navbar-default,
+  .page-sidebar-fixed .page-sidebar,
+  .main-sidebar,
+  .page-topbar {
+    display: none !important;
+  }
+  .page-content,
+  .main-content,
+  .page-wrapper,
+  .main-wrapper,
+  .content-wrapper {
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+  }
+  /* Containers Bootstrap 3 passam a ser fluídos no celular. */
+  .container,
+  .container-fluid {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  /* Impede o scroll horizontal residual do tema Space. */
+  html, body { overflow-x: hidden !important; }
+
+  /* ==========================================================================
+   * 9. HEADER COMPACTO iOS
+   * ======================================================================== */
+  .ios-mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 9000;
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--ios-border);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    .ios-mobile-header { background: rgba(28, 28, 30, 0.85); }
+  }
+  .ios-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px;
+    padding: 0 8px;
+  }
+  .ios-header-titulo {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ios-text-primary);
+    text-align: center;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ios-header-btn {
+    min-width: 44px;
+    min-height: 44px;
+    background: transparent;
+    border: 0;
+    color: var(--ios-accent);
+    font-size: 24px;
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .ios-header-btn--esq { font-size: 32px; line-height: 1; }
+  .ios-header-btn--dir {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--ios-accent); color: #fff;
+    font-size: 15px; font-weight: 600;
+    min-width: 32px; min-height: 32px;
+  }
+
+  .ios-main { padding: 0; }
+
+  /* ==========================================================================
+   * 10. SEÇÕES E ESTADOS VAZIOS
+   * ======================================================================== */
+  .ios-secao { padding: 12px; }
+  .ios-secao-titulo {
+    margin: 4px 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ios-vazio {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--ios-text-secondary);
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    border: 1px solid var(--ios-border);
+  }
+  .ios-link-ver-todos {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    margin-top: 8px;
+    color: var(--ios-accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .ios-sheet-titulo {
+    margin: 0 0 12px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ios-text-primary);
+  }
+
+  /* ==========================================================================
+   * 11. CARD DE DEMANDA (base compartilhada por Painel, Demandas, Prazos)
+   * ======================================================================== */
+  .ios-card-demanda {
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--ios-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .ios-card-demanda:active { transform: scale(0.98); }
+  .ios-card-demanda-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .ios-card-demanda-descricao {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.35;
+    color: var(--ios-text-primary);
+  }
+  .ios-card-demanda-rodape {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--ios-border);
+  }
+  .ios-card-demanda-prazo {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ios-text-secondary);
+  }
+
+  /* ==========================================================================
+   * 12. PILLS DE STATUS
+   * ======================================================================== */
+  .ios-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    background: rgba(142, 142, 147, 0.18);
+    color: var(--ios-text-secondary);
+  }
+  .ios-pill--sucesso  { background: rgba(52, 199, 89, 0.18);  color: #248A3D; }
+  .ios-pill--atencao  { background: rgba(255, 149, 0, 0.18);  color: #B25E00; }
+  .ios-pill--urgente  { background: rgba(255, 59, 48, 0.18);  color: #B10D06; }
+  .ios-pill--info     { background: rgba(0, 122, 255, 0.18);  color: #0040A3; }
+  .ios-pill--neutro   { background: rgba(142, 142, 147, 0.18); color: var(--ios-text-secondary); }
+  @media (prefers-color-scheme: dark) {
+    .ios-pill--sucesso { color: #30D158; }
+    .ios-pill--atencao { color: #FF9F0A; }
+    .ios-pill--urgente { color: #FF453A; }
+    .ios-pill--info    { color: #0A84FF; }
+  }
+
+  /* ==========================================================================
+   * 13. FILTROS SEGMENTADOS (iOS Segmented Control)
+   * ======================================================================== */
+  .ios-filtros-segmento {
+    display: inline-flex;
+    width: 100%;
+    background: rgba(118, 118, 128, 0.12);
+    border-radius: 10px;
+    padding: 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ios-filtro-seg {
+    flex: 1;
+    text-align: center;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ios-text-primary);
+    text-decoration: none;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .ios-filtro-seg.ativo {
+    background: var(--ios-bg-card);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ==========================================================================
+   * 14. CARD DE APROVAÇÃO (1 toque para aprovar / rejeitar)
+   * ======================================================================== */
+  .ios-aprovacao-card {
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--ios-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  .ios-aprovacao-topo { display: flex; justify-content: space-between; gap: 8px; }
+  .ios-aprovacao-acoes {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .ios-aprovacao-acoes form { margin: 0; }
+  .ios-btn-aprovar {
+    width: 100%;
+    background: #34C759;
+    color: #fff;
+    border: 0;
+  }
+  .ios-btn-rejeitar {
+    width: 100%;
+    background: rgba(255, 59, 48, 0.14);
+    color: #FF3B30;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+  }
+  .ios-btn-cancelar {
+    flex: 1;
+    background: rgba(142, 142, 147, 0.18);
+    color: var(--ios-text-primary);
+    border: 0;
+  }
+  .ios-btn-salvar {
+    flex: 2;
+    background: var(--ios-accent);
+    color: #fff;
+    border: 0;
+  }
+
+  /* ==========================================================================
+   * 15. CHAT (bolhas estilo iMessage)
+   * ======================================================================== */
+  .ios-chat {
+    padding: 12px 10px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ios-chat-linha {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 85%;
+    margin-bottom: 10px;
+  }
+  .ios-chat-linha--eu {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+  .ios-chat-remetente {
+    font-size: 11px;
+    color: var(--ios-text-secondary);
+    padding: 0 10px 2px;
+  }
+  .ios-chat-bolha {
+    padding: 8px 12px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.35;
+    word-wrap: break-word;
+  }
+  .ios-chat-bolha--outro {
+    background: rgba(118, 118, 128, 0.18);
+    color: var(--ios-text-primary);
+    border-bottom-left-radius: 4px;
+  }
+  .ios-chat-bolha--eu {
+    background: var(--ios-accent);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .ios-chat-hora {
+    font-size: 10px;
+    color: var(--ios-text-secondary);
+    padding: 2px 10px 0;
+  }
+  .ios-chat-input-bar {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: calc(var(--ios-tabbar-height) + env(safe-area-inset-bottom, 16px));
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--ios-border);
+    display: flex;
+    gap: 8px;
+    z-index: 9985;
+  }
+  @media (prefers-color-scheme: dark) {
+    .ios-chat-input-bar { background: rgba(28, 28, 30, 0.95); }
+  }
+  .ios-chat-input-bar input[type="text"] {
+    flex: 1;
+    margin: 0;
+    background: var(--ios-bg-card);
+    border: 1px solid var(--ios-border);
+  }
+  .ios-btn-enviar {
+    width: 44px; min-width: 44px;
+    background: var(--ios-accent);
+    color: #fff;
+    border: 0;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* ==========================================================================
+   * 16. AGENDA (lista compacta por dia)
+   * ======================================================================== */
+  .ios-agenda-dia { margin-bottom: 16px; }
+  .ios-agenda-dia-titulo {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 2px;
+  }
+  .ios-agenda-item {
+    display: flex;
+    gap: 12px;
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid var(--ios-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  .ios-agenda-hora {
+    font-weight: 600;
+    color: var(--ios-accent);
+    min-width: 54px;
+    font-size: 14px;
+  }
+  .ios-agenda-corpo { flex: 1; }
+
+  /* ==========================================================================
+   * 17. FAB (Floating Action Button) acima da tab bar
+   * ======================================================================== */
+  .ios-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--ios-tabbar-height) + env(safe-area-inset-bottom, 16px) + 16px);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--ios-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 28px;
+    font-weight: 300;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    z-index: 9980;
+  }
+
+  /* ==========================================================================
+   * 18. LISTA DE BOTÕES VERTICAL (gavetas, menu "Mais")
+   * ======================================================================== */
+  .ios-lista-botoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ios-btn-lista {
+    width: 100%;
+    justify-content: flex-start !important;
+    padding: 12px 14px !important;
+    background: var(--ios-bg-primary);
+    color: var(--ios-text-primary);
+    text-decoration: none;
+    text-align: left;
+    border: 1px solid var(--ios-border);
+  }
+  .ios-btn-lista-sair {
+    width: 100%;
+    background: #FF3B30;
+    color: #fff;
+    border: 0;
+    margin-top: 8px;
+    text-decoration: none;
+  }
+}
+
