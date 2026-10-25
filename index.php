@@ -62,6 +62,14 @@ if ($__ehPwa || $__ehMobile) {
 
                     </div>
                     <div id="main-wrapper">
+                        <?php // === Aprovacoes (29/09/2026): CAIXA DE ENTRADA no topo da home (Dr. Ademir/gerencia aprovam em 1 clique; demais: canal reservado) ===
+                        try {
+                            if ((@include_once 'class/Aprovacao.php') and class_exists('Aprovacao')) {
+                                $apInicio = new Aprovacao();
+                                echo $apInicio->painelInicio($_SESSION['usuario']['id'], (isset($_GET['ap_rel']) and $_GET['ap_rel'] === '1'));
+                            }
+                        } catch (Throwable $apEx) { }
+                        // === /Aprovacoes === ?>
                         <?php /// sessão do ademir para aprovação de parcerias
                         if ($_SESSION['usuario']['id'] == "40" or $_SESSION['usuario']['id'] == "1" or  $_SESSION['usuario']['id'] == "6" or  $_SESSION['usuario']['id'] == "5" or  $_SESSION['usuario']['id'] == "25"){
                         ?>
