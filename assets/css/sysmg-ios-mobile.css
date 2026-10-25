@@ -1,0 +1,266 @@
+/**
+ * ============================================================================
+ * SYSMG - MÓDULO DE INTERFACE MOBILE iOS-FIRST (PWA)
+ * Objetivo: Tornar o SysMG 100% intuitivo no iPhone sem alterar a versão PC.
+ * ============================================================================
+ */
+
+/* 1. VARIÁVEIS DE DESIGN PADRÃO APPLE (iOS HIG) */
+:root {
+  --ios-bg-primary: #F2F2F7;          /* Fundo cinza claro clássico de apps iOS */
+  --ios-bg-card: #FFFFFF;             /* Fundo branco puro para os cartões */
+  --ios-text-primary: #1C1C1E;        /* Cor de texto principal de alto contraste */
+  --ios-text-secondary: #8E8E93;      /* Cor de rótulos e textos secundários */
+  --ios-accent: #007AFF;              /* Azul oficial de ação do iOS (ajustável) */
+  --ios-border: rgba(60, 60, 67, 0.12); /* Linha divisória fina padrão Apple */
+  --ios-radius-card: 16px;            /* Arredondamento suave dos cartões */
+  --ios-tabbar-height: 64px;          /* Altura da barra de navegação inferior */
+}
+
+/* Suporte automático caso você prefira o modo escuro (Dark Mode) no celular */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ios-bg-primary: #000000;
+    --ios-bg-card: #1C1C1E;
+    --ios-text-primary: #FFFFFF;
+    --ios-text-secondary: #98989F;
+    --ios-accent: #0A84FF;
+    --ios-border: rgba(84, 84, 88, 0.35);
+  }
+}
+
+/* No PC (telas >= 769px), escondemos os componentes exclusivos de celular */
+@media (min-width: 769px) {
+  .ios-bottom-tabbar,
+  .ios-bottom-sheet-backdrop,
+  .ios-mobile-header {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
+ * 2. REGRAS EXCLUSIVAS PARA CELULAR (Telas até 768px)
+ * Tudo aqui dentro só é ativado quando o usuário acessa pelo celular!
+ * ============================================================================ */
+@media (max-width: 768px) {
+
+  /* Ajuste geral do corpo da página para respeitar o topo e a base do iPhone */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background-color: var(--ios-bg-primary);
+    color: var(--ios-text-primary);
+    margin: 0;
+    padding-top: env(safe-area-inset-top, 12px);
+    /* Espaço no final da página para o conteúdo não ficar escondido atrás da barra inferior */
+    padding-bottom: calc(var(--ios-tabbar-height) + env(safe-area-inset-bottom, 20px) + 24px);
+    overflow-x: hidden; /* Impede que a tela role para os lados acidentalmente */
+    -webkit-tap-highlight-color: transparent; /* Remove piscada cinza ao tocar no iPhone */
+  }
+
+  /* 3. PREVENÇÃO DE ZOOM AUTOMÁTICO NO IPHONE (REGRA DE 16PX)
+   * Se um campo tiver fonte menor que 16px, o Safari dá zoom e bagunça a tela. */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px; /* Altura mínima recomendada pela Apple para o toque do dedo */
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  /* Garante que todos os botões tenham área de toque confortável (mínimo 44px) */
+  button,
+  .btn,
+  a.btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-weight: 600;
+    touch-action: manipulation; /* Deixa o clique instantâneo sem atraso de 300ms */
+  }
+
+  /* 4. GRADE DE INDICADORES (DASHBOARD DE PRODUÇÃO/GESTÃO)
+   * Transforma painéis largos em uma grade de 2 colunas lado a lado no iPhone */
+  .sysmg-kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+
+  .sysmg-kpi-card {
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    padding: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--ios-border);
+  }
+
+  /* 5. CONVERSÃO AUTOMÁTICA DE TABELAS DE PC EM CARTÕES DE CELULAR
+   * Basta adicionar a classe "tabela-responsiva-ios" na sua <table> atual! */
+  table.tabela-responsiva-ios,
+  table.tabela-responsiva-ios thead,
+  table.tabela-responsiva-ios tbody,
+  table.tabela-responsiva-ios th,
+  table.tabela-responsiva-ios td,
+  table.tabela-responsiva-ios tr {
+    display: block;
+    width: 100%;
+  }
+
+  /* Esconde o cabeçalho tradicional da tabela no celular */
+  table.tabela-responsiva-ios thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  /* Cada linha (tr) vira um Card elegante estilo iOS */
+  table.tabela-responsiva-ios tbody tr {
+    background: var(--ios-bg-card);
+    border-radius: var(--ios-radius-card);
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--ios-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Cada célula (td) mostra o nome da coluna à esquerda e o valor à direita */
+  table.tabela-responsiva-ios td {
+    border: none;
+    border-bottom: 1px solid var(--ios-border);
+    position: relative;
+    padding: 8px 0 8px 42%;
+    text-align: right;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+  }
+
+  table.tabela-responsiva-ios td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  /* Puxa o nome da coluna automaticamente do atributo data-label */
+  table.tabela-responsiva-ios td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 40%;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ios-text-secondary);
+    text-transform: uppercase;
+  }
+
+  /* 6. BARRA DE NAVEGAÇÃO INFERIOR (BOTTOM TAB BAR NATIVA iOS) */
+  .ios-bottom-tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--ios-tabbar-height) + env(safe-area-inset-bottom, 16px));
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px); /* Efeito vidro fosco (Glassmorphism) do iOS */
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--ios-border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9990;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ios-bottom-tabbar {
+      background: rgba(28, 28, 30, 0.85);
+    }
+  }
+
+  .ios-tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--ios-text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    gap: 4px;
+    min-height: 48px;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  /* Efeito de clique suave estilo iPhone */
+  .ios-tab-item:active {
+    transform: scale(0.92);
+  }
+
+  .ios-tab-item.ativo {
+    color: var(--ios-accent);
+    font-weight: 600;
+  }
+
+  .ios-tab-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  /* 7. GAVETA DESLIZANTE (BOTTOM SHEET) PARA DETALHES E FILTROS */
+  .ios-bottom-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .ios-bottom-sheet-backdrop.aberto {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ios-bottom-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--ios-bg-card);
+    border-radius: 22px 22px 0 0;
+    padding: 12px 20px calc(24px + env(safe-area-inset-bottom, 16px));
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 9999;
+  }
+
+  .ios-bottom-sheet-backdrop.aberto .ios-bottom-sheet {
+    transform: translateY(0);
+  }
+
+  /* Barrinha cinza no topo da gaveta indicando que pode arrastar/fechar */
+  .ios-sheet-handle {
+    width: 40px;
+    height: 5px;
+    background: rgba(142, 142, 147, 0.4);
+    border-radius: 99px;
+    margin: 4px auto 16px;
+  }
+}
